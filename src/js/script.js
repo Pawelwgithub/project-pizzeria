@@ -93,7 +93,7 @@
       menuContainer.appendChild(thisProduct.element);
     }
 
-    /* Module 7.5 */
+    /* Module 7.5, Module 7.6 */
 
     getElements(){
       const thisProduct = this;
@@ -108,6 +108,8 @@
       //console.log(thisProduct.cartButton);
       thisProduct.priceElem = thisProduct.element.querySelector(select.menuProduct.priceElem);
       //console.log(thisProduct.priceElem);
+      thisProduct.imageWrapper = thisProduct.element.querySelector(select.menuProduct.imageWrapper);
+      //console.log(thisProduct.imageWrapper);
     }
 
     /* Module 7.4 */
@@ -197,7 +199,7 @@
 
     }
 
-    /* Module 7.5 */
+    /* Module 7.5, Module 7.6 */
 
     processOrder(){
       const thisProduct = this;
@@ -208,6 +210,10 @@
       
       const formData = utils.serializeFormToObject(thisProduct.form);
       console.log('formData', formData);
+
+      /* Module 7.6 */
+
+      thisProduct.params = {};
 
       /* set variable price to equal thisProduct.data.price, Module 7.5 */
       /* ustaw cenę zmienną na thisProduct.data.price */
@@ -268,6 +274,52 @@
           /* ZAKOŃCZ JESZCZE JEŚLI: jeśli opcja nie jest zaznaczona, a opcja jest domyślna */
           }
         
+          /* find all images of selected options, Module 7.6 */
+          /* znajdź wszystkie zdjęcia wybranych opcji, moduł 7.6 */
+
+          const optionImages = thisProduct.imageWrapper.querySelectorAll('.' + paramId + '-' + optionId);
+
+          /* START IF: if option is selected, Module 7.6 */
+          /* START JEŻELI: jeśli wybrana jest opcja, moduł 7.6 */
+
+          if (optionSelected) {
+            if (!thisProduct.params[paramId]) {
+              thisProduct.params[paramId] = {
+                label: param.label,
+                options: {},
+              };
+            }
+          
+            thisProduct.params[paramId].options[optionId] = option.label;
+
+            /* START LOOP: for each optionImage of all option images, Module 7.6 */
+            /* PĘTLA STARTOWA: dla każdej optionImage wszystkich opcji obrazów, moduł 7.6 */
+
+            for (let optionImage of optionImages) {
+
+              /* add class active for images of selected options, Module 7.6 */
+              /* dodaj klasę aktywną dla obrazów wybranych opcji, Moduł 7.6 */
+
+              optionImage.classList.add(classNames.menuProduct.imageVisible);
+            }
+          }
+
+          /* START ELSE : if option is not selected, Module 7.6 */
+          /* START ELSE: jeżeli opcja nie jest zaznaczona, moduł 7.6 */
+
+          else {
+            
+            /* START LOOP: for each  optionImage of all option images, Module 7.6 */
+            /* PĘTLA STARTOWA: dla każdej optionImage wszystkich opcji obrazów, moduł 7.6 */
+
+            for (let optionImage of optionImages) {
+
+              /* remove class active for the active image, Module 7.6 */
+              /* usuń klasę aktywną dla aktywnego obrazu, moduł 7.6 */
+              optionImage.classList.remove(classNames.menuProduct.imageVisible);
+            }
+          }
+
         /* END LOOP: for each optionId in param.options, Module 7.5 */
         /* KONIEC PĘTLI: dla każdej optionId w param.options */
         }
