@@ -52,7 +52,7 @@
     menuProduct: Handlebars.compile(document.querySelector(select.templateOf.menuProduct).innerHTML),
   };
 
-  /* Module 7.3 */
+  /* Module 7.3, Module 7.4, Module 7.5, Module 7.6, Module 7.7 */
 
   class Product{
     constructor(id, data){
@@ -202,7 +202,7 @@
 
     }
 
-    /* Module 7.5, Module 7.6 */
+    /* Module 7.5, Module 7.6, Module 7.7 */
 
     processOrder(){
       const thisProduct = this;
