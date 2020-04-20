@@ -62,14 +62,15 @@
       thisProduct.data = data;
       
       thisProduct.renderInMenu();
-      //console.log('new Product:', thisProduct);
+      console.log('new Product:', thisProduct);
       thisProduct.getElements();
       thisProduct.initAccordion();
       thisProduct.initOrderForm();
+      thisProduct.initAmountWidget();
       thisProduct.processOrder();
     }
 
-    renderInMenu(){
+    renderInMenu(){ //renderuje czyli tworzy produkty na stronie
       const thisProduct = this;
 
       /* generate HTML based on template, Module 7.3 */
@@ -82,18 +83,18 @@
 
       thisProduct.element = utils.createDOMFromHTML(generatedHTML);
       
-      /* find menu container, Module 7.3 */
-      /* znajdź kontener menu, moduł 7.3 */
+      /* find menu container, Module 7.3 */ 
+      /* znajdź kontener menu, moduł 7.3, znajdujemy kontener menu,którego selektor mamy zapisany w select.containerOf.menu. */
 
       const menuContainer = document.querySelector(select.containerOf.menu);
 
       /* add element to menu, Module 7.3 */
-      /* dodaj element do menu, moduł 7.3 */
+      /* dodaj element do menu, moduł 7.3, dodajemy stworzony element do menu za pomocą metody appendChils */
      
       menuContainer.appendChild(thisProduct.element);
     }
 
-    /* Module 7.5, Module 7.6 */
+    /* Module 7.5, Module 7.6, Module 7.7 */
 
     getElements(){
       const thisProduct = this;
@@ -110,6 +111,8 @@
       //console.log(thisProduct.priceElem);
       thisProduct.imageWrapper = thisProduct.element.querySelector(select.menuProduct.imageWrapper);
       //console.log(thisProduct.imageWrapper);
+      thisProduct.amountWidgetElem = thisProduct.element.querySelector(select.menuProduct.amountWidget);
+      console.log(thisProduct.amountWidgetElem);
     }
 
     /* Module 7.4 */
@@ -177,11 +180,11 @@
 
     /* Module 7.5 */
 
-    initOrderForm(){
+    initOrderForm(){ //Event listenery dla formularza
       const thisProduct = this;
-      console.log(this.initOrderForm);
+      //console.log(this.initOrderForm);
 
-      thisProduct.form.addEventListener('submit', function(event){
+      thisProduct.form.addEventListener('submit', function(event){ //?? dlaczego tutaj dodajemy event, a ponizej nie?
         event.preventDefault();
         thisProduct.processOrder();
       });
@@ -203,20 +206,20 @@
 
     processOrder(){
       const thisProduct = this;
-      console.log(this.processOrder);
+      //console.log(this.processOrder);
 
       /* read all data from the form (using utils.serializeFormToObject) and save it to const formData, Module 7.5 */
       /* odczytaj wszystkie dane z formularza (używając utils.serializeFormToObject) i zapisz je w const formData */
       
-      const formData = utils.serializeFormToObject(thisProduct.form);
-      console.log('formData', formData);
+      const formData = utils.serializeFormToObject(thisProduct.form); //odczyt wartosci wybranych
+      //console.log('formData', formData);
 
       /* Module 7.6 */
 
-      thisProduct.params = {};
+      thisProduct.params = {}; //?? dlaczego tutaj dodajemy, dopiero teraz?
 
       /* set variable price to equal thisProduct.data.price, Module 7.5 */
-      /* ustaw cenę zmienną na thisProduct.data.price */
+      /* ustaw cenę zmienną na thisProduct.data.price, obliczamy cene */
       
       let price = thisProduct.data.price;
       //console.log(price);
@@ -309,13 +312,14 @@
 
           else {
             
-            /* START LOOP: for each  optionImage of all option images, Module 7.6 */
+            /* START LOOP: for each optionImage of all option images, Module 7.6 */
             /* PĘTLA STARTOWA: dla każdej optionImage wszystkich opcji obrazów, moduł 7.6 */
 
             for (let optionImage of optionImages) {
 
               /* remove class active for the active image, Module 7.6 */
               /* usuń klasę aktywną dla aktywnego obrazu, moduł 7.6 */
+
               optionImage.classList.remove(classNames.menuProduct.imageVisible);
             }
           }
@@ -328,13 +332,112 @@
       /* KONIEC PĘTLI: dla każdej paramId w thisProduct.data.params */
       }
 
+      /* multiply price by amount, Module 7.7 */
+      /* pomnóż cenę przez kwotę- ilość sztuk, moduł 7.7 */
+
+      price *= thisProduct.amountWidget.value; 
+
       /* set the contents of thisProduct.priceElem to be the value of variable price, Module 7.5 */
       /* ustaw zawartość thisProduct.priceElem na wartość zmiennej ceny */
       
       thisProduct.priceElem.innerHTML = price;
       //console.log(thisProduct.priceElem.innerHTML);
     }
+
+    /* Module 7.7 */
+
+    initAmountWidget(){ //tworzy instancję klasy AmountWidget i zapisuje ją we właściwości produktu
+      const thisProduct = this;
+
+      thisProduct.amountWidget = new AmountWidget(thisProduct.amountWidgetElem);
+      // console.log(thisProduct.amountWidget);
+
+      thisProduct.amountWidgetElem.addEventListener('updated', function(){
+        thisProduct.processOrder();
+      });
+    }
   }
+
+  /* Module 7.7 */
+
+  class AmountWidget{
+    constructor(element){
+      const thisWidget = this;
+
+      thisWidget.getElements(element);
+      thisWidget.value = settings.amountWidget.defaultValue; //!! w związku z walidacją-sprawdzaniem poprawności zmiany ilości dodatkowo, musimy nadać pierwotną wartość thisWidget.value, na wypadek gdyby value w kodzie HTML nie zostało podane
+      thisWidget.setValue(thisWidget.input.value);
+      thisWidget.initActions();
+
+      console.log('AmountWidget:', thisWidget);
+      console.log('constructor arguments:', element);
+    }
+
+    /* Module 7.7 */
+
+    getElements(element){
+      const thisWidget = this;
+
+      thisWidget.element = element;
+      thisWidget.input = thisWidget.element.querySelector(select.widgets.amount.input);
+      thisWidget.linkDecrease = thisWidget.element.querySelector(select.widgets.amount.linkDecrease);
+      thisWidget.linkIncrease = thisWidget.element.querySelector(select.widgets.amount.linkIncrease);
+    }
+
+    /* Module 7.7 */
+
+    setValue(value){
+      const thisWidget = this;
+
+      const newValue = parseInt(value);
+
+      /* TODO: Add validation, Module 7.7 */
+      /* DO ZROBIENIA: Dodaj sprawdzanie poprawności, moduł 7.7 */
+      /* !! walidacja-sprawdzanie poprawności zmiany ilości, dzięki której zmiana ilości wykona się tylko jeżeli nowa wartość jest:
+        - inna niż dotychczasowa,
+        - większa lub równa niż wartość settings.amountWidget.defaultMin,
+        - mniejsza lub równa niż wartość settings.amountWidget.defaultMax, moduł 7.7 !! */
+
+      if(newValue != thisWidget.value && newValue >= settings.amountWidget.defaultMin && newValue <= settings.amountWidget.defaultMax ){
+
+        thisWidget.value = newValue;
+        thisWidget.announce();
+      }
+
+      thisWidget.input.value = thisWidget.value;
+    }
+
+    /* Module 7.7 */
+
+    initActions(){
+      const thisWidget = this;
+      
+      thisWidget.input.addEventListener('change', function(){
+        thisWidget.setValue(thisWidget.input.value);
+      });
+
+      thisWidget.linkDecrease.addEventListener('click', function(event){
+        event.preventDefault();
+        thisWidget.setValue(thisWidget.value - 1);
+      });
+
+      thisWidget.linkIncrease.addEventListener('click', function(event){
+        event.preventDefault();
+        thisWidget.setValue(thisWidget.value + 1);
+      });
+    }
+
+    /* Module 7.7 */
+
+    announce(){ //będzie ona tworzyła instancje klasy Event. Następnie, ten event zostanie wywołany na kontenerze naszego widgetu
+      const thisWidget = this;
+
+      const event = new Event('updated');
+      thisWidget.element.dispatchEvent(event); //wywołuje zdarzenie w bieżącym elemencie
+    }
+  }
+
+  /* Module 7.3 */
 
   const app = {
     initMenu: function(){
