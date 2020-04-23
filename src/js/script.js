@@ -108,12 +108,12 @@
       const thisProduct = this;
 
       /* generate HTML based on template, Module 7.3 */
-      /* generuj HTML na podstawie szablonu, moduł 7.3 */
+      /* generuj HTML na podstawie szablonu czyli generuje kod HTML pojedynczego produktu, moduł 7.3 */
 
       const generatedHTML = templates.menuProduct(thisProduct.data);
 
       /* create element using utils.createElementFromHTML, Module 7.3 */
-      /* utwórz element za pomocą utils.createElementFromHTML, moduł 7.3 */
+      /* utwórz element za pomocą utils.createElementFromHTML - tworzenie elementu DOM, moduł 7.3 */
 
       thisProduct.element = utils.createDOMFromHTML(generatedHTML);
       
@@ -232,8 +232,8 @@
       thisProduct.cartButton.addEventListener('click', function(event){
         event.preventDefault();
         thisProduct.processOrder();
+        thisProduct.addToCart();
       });
-
     }
 
     /* Module 7.5, Module 7.6, Module 7.7 */
@@ -248,9 +248,9 @@
       const formData = utils.serializeFormToObject(thisProduct.form); //odczyt wartosci wybranych
       //console.log('formData', formData);
 
-      /* Module 7.6 */
+      /* Module 8.3 */
 
-      thisProduct.params = {}; //?? dlaczego tutaj dodajemy, dopiero teraz?
+      thisProduct.params = {}; //?? pusty obiekt {} do właściwości thisProduct.params, wybrane opcje zapiszemy w nowym obiekcie thisProduct.params, dlaczego tutaj dodajemy, dopiero teraz?
 
       /* set variable price to equal thisProduct.data.price, Module 7.5 */
       /* ustaw cenę zmienną na thisProduct.data.price, obliczamy cene */
@@ -316,18 +316,26 @@
 
           const optionImages = thisProduct.imageWrapper.querySelectorAll('.' + paramId + '-' + optionId);
 
-          /* START IF: if option is selected, Module 7.6 */
-          /* START JEŻELI: jeśli wybrana jest opcja, moduł 7.6 */
+          /* START IF: if option is selected, Module 7.6, Module 8.3 */
+          /* START JEŻELI: jeśli wybrana jest opcja, moduł 7.6, moduł 8.3 */
 
-          if (optionSelected) {
-            if (!thisProduct.params[paramId]) {
+          if (optionSelected){
+
+            /* Module 8.3, podwójna pętla – zewnętrzna iteruje po parametrach, a wewnętrzna po ich opcjach. 
+            Dlatego ten kod może wykonać się dla pewnego parametru kilka razy.
+            Dlatego sprawdzamy, czy ten parametr został już dodany do thisProduct.params. 
+            Jeśli nie, to pod jego kluczem dodajemy jego label oraz pusty obiekt options.
+            Następnie do wspomnianego obiektu options dodajemy zaznaczoną opcję, używając jej klucza, 
+            a jako wartość ustawiając jej label */
+            
+            if (!thisProduct.params[paramId]){
               thisProduct.params[paramId] = {
                 label: param.label,
                 options: {},
               };
             }
-          
             thisProduct.params[paramId].options[optionId] = option.label;
+            console.log(thisProduct.params);
 
             /* START LOOP: for each optionImage of all option images, Module 7.6 */
             /* PĘTLA STARTOWA: dla każdej optionImage wszystkich opcji obrazów, moduł 7.6 */
@@ -366,16 +374,23 @@
       /* KONIEC PĘTLI: dla każdej paramId w thisProduct.data.params */
       }
 
-      /* multiply price by amount, Module 7.7 */
-      /* pomnóż cenę przez kwotę- ilość sztuk, moduł 7.7 */
+      /* multiply price by amount, Module 7.7, Module 8.3  */
+      /* pomnóż cenę przez kwotę- ilość sztuk, moduł 7.7, moduł 8.3 */
 
-      price *= thisProduct.amountWidget.value; 
+      //price *= thisProduct.amountWidget.value;
 
-      /* set the contents of thisProduct.priceElem to be the value of variable price, Module 7.5 */
+      thisProduct.priceSingle = price; //cena jednej sztuki
+      thisProduct.price = thisProduct.priceSingle * thisProduct.amountWidget.value; //cena całkowita
+
+      /* set the contents of thisProduct.priceElem to be the value of variable price, Module 7.5, Module 8.3 */
       /* ustaw zawartość thisProduct.priceElem na wartość zmiennej ceny */
       
-      thisProduct.priceElem.innerHTML = price;
+      //thisProduct.priceElem.innerHTML = price;
       //console.log(thisProduct.priceElem.innerHTML);
+
+      thisProduct.priceElem.innerHTML = thisProduct.price;
+
+      console.log('thisProduct', thisProduct);
     }
 
     /* Module 7.7 */
@@ -389,6 +404,17 @@
       thisProduct.amountWidgetElem.addEventListener('updated', function(){
         thisProduct.processOrder();
       });
+    }
+
+    /* Module 8.3 */
+
+    addToCart(){ //przekazuje całą instancję jako argument metody app.cart.add. 
+      const thisProduct = this;
+
+      thisProduct.name = thisProduct.data.name;
+      thisProduct.amount = thisProduct.amountWidget.value;
+
+      app.cart.add(thisProduct); //odwolanie do cart.add
     }
   }
 
@@ -486,7 +512,7 @@
       thisCart.initActions();
     }
 
-    /* Module 8.2 */
+    /* Module 8.2, Module 8.3 */
 
     getElements(element){
       const thisCart = this;
@@ -496,6 +522,7 @@
       thisCart.dom.wrapper = element;
 
       thisCart.dom.toggleTrigger = thisCart.dom.wrapper.querySelector(select.cart.toggleTrigger);
+      thisCart.dom.productList = thisCart.dom.wrapper.querySelector(select.cart.productList);
     }
 
     /* Module 8.2 */
@@ -506,6 +533,28 @@
       thisCart.dom.toggleTrigger.addEventListener('click', function(){
         thisCart.dom.wrapper.classList.toggle(classNames.cart.wrapperActive);
       });
+    }
+
+    /* Module 8.3 */
+
+    add(menuProduct){ //dodaje produkt do koszyka , menuProdukt - instancja produktu 
+      const thisCart = this;
+      console.log('adding product', menuProduct);
+
+      /* generate HTML based on template, Module 8.3 - czyli generuje kod HTML pojedynczego produktu */
+
+      const generatedHTML = templates.cartProduct(menuProduct);
+      console.log('generatedHTML', generatedHTML);
+
+      /* create element using utils.createElementFromHTML, Module 8.3 - tworzenie elementu DOM */
+      
+      const generatedDOM = utils.createDOMFromHTML(generatedHTML);
+      console.log('generatedDOM', generatedDOM);
+
+      /* add elements generatedDOM to menu thisCart.dom.productList, Module 8.3 - dodajemy wygenerowane elementy DOM produktu do menu thisCart.dom.productList za pomocą metody appendChils */
+
+      thisCart.dom.productList.appendChild(generatedDOM);
+      console.log('thisCart.dom.productList', thisCart.dom.productList);
     }
   }
 
