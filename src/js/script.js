@@ -335,7 +335,7 @@
               };
             }
             thisProduct.params[paramId].options[optionId] = option.label;
-            console.log(thisProduct.params);
+            //console.log(thisProduct.params);
 
             /* START LOOP: for each optionImage of all option images, Module 7.6 */
             /* PĘTLA STARTOWA: dla każdej optionImage wszystkich opcji obrazów, moduł 7.6 */
@@ -389,8 +389,7 @@
       //console.log(thisProduct.priceElem.innerHTML);
 
       thisProduct.priceElem.innerHTML = thisProduct.price;
-
-      console.log('thisProduct', thisProduct);
+      //console.log('thisProduct', thisProduct);
     }
 
     /* Module 7.7 */
@@ -487,32 +486,43 @@
       });
     }
 
-    /* Module 7.7 */
+    /* Module 7.7, Module 8.4 */
 
     announce(){ //będzie ona tworzyła instancje klasy Event. Następnie, ten event zostanie wywołany na kontenerze naszego widgetu
       const thisWidget = this;
 
-      const event = new Event('updated');
+      //const event = new Event('updated');
+
+      /* Module 8.4 */
+      /* Używamy tutaj innego rodzaju eventu, którego właściwości możemy kontrolować. 
+        W tym wypadku włączamy jego właściwość bubbles, dzięki czemu ten event po wykonaniu na jakimś elemencie 
+        będzie przekazany jego rodzicowi, oraz rodzicowi rodzica, i tak dalej – aż do samego <body>, document i window */
+      
+      const event = new CustomEvent('updated', { //custom dod. custom dla Aktualizacja sum po zmianie ilości
+        bubbles: true //włączamy właściwość bubbles, dzięki czemu event po wykonaniu na jakimś elemencie będzie przekazany jego rodzicowi, oraz rodzicowi rodzica
+      });
       thisWidget.element.dispatchEvent(event); //wywołuje zdarzenie w bieżącym elemencie
     }
   }
 
-  /* Module 8.2 */
+  /* Module 8.2, Module 8.4 */
 
   class Cart {
     constructor(element){
       const thisCart = this;
 
+      thisCart.deliveryFee = settings.cart.defaultDeliveryFee; // Module 8.4 cena bedzie stala
+
       thisCart.products = [];
 
       thisCart.getElements(element);
 
-      console.log('new Cart', thisCart);
+      //console.log('new Cart', thisCart);
 
       thisCart.initActions();
     }
 
-    /* Module 8.2, Module 8.3 */
+    /* Module 8.2, Module 8.3, Module 8.4 */
 
     getElements(element){
       const thisCart = this;
@@ -523,9 +533,21 @@
 
       thisCart.dom.toggleTrigger = thisCart.dom.wrapper.querySelector(select.cart.toggleTrigger);
       thisCart.dom.productList = thisCart.dom.wrapper.querySelector(select.cart.productList);
+
+      /* Module 8.4 */
+      /*Tworzymy tutaj tablicę, która zawiera cztery stringi (ciągi znaków). 
+        Każdy z nich jest kluczem w obiekcie select.cart. 
+        Wykorzystamy tę tablicę, aby szybko stworzyć cztery właściwości obiektu thisCart.dom o tych samych kluczach. 
+        Każda z nich będzie zawierać kolekcję elementów znalezionych za pomocą odpowiedniego selektora. */
+      
+      thisCart.renderTotalsKeys = ['totalNumber', 'totalPrice', 'subtotalPrice', 'deliveryFee']; //do wyswietlania aktualnych sum
+
+      for(let key of thisCart.renderTotalsKeys){
+        thisCart.dom[key] = thisCart.dom.wrapper.querySelectorAll(select.cart[key]);
+      }
     }
 
-    /* Module 8.2 */
+    /* Module 8.2, Module 8.4 */
 
     initActions(){
       const thisCart = this;
@@ -533,28 +555,126 @@
       thisCart.dom.toggleTrigger.addEventListener('click', function(){
         thisCart.dom.wrapper.classList.toggle(classNames.cart.wrapperActive);
       });
+
+      /* Module 8.4 */
+      /* Nasłuchujemy tutaj na liście produktów, w której umieszczamy produkty, 
+      w których znajduje się widget liczby sztuk, który generuje ten event. 
+      Dzięki właściwości bubbles "usłyszymy" go na tej liście i możemy wtedy wykonać metodę update */
+      
+      thisCart.dom.productList.addEventListener('updated', function(){
+        thisCart.update();
+      });
     }
 
-    /* Module 8.3 */
+    /* Module 8.3, Module 8.4 */
 
     add(menuProduct){ //dodaje produkt do koszyka , menuProdukt - instancja produktu 
       const thisCart = this;
-      console.log('adding product', menuProduct);
+      //console.log('adding product', menuProduct);
 
       /* generate HTML based on template, Module 8.3 - czyli generuje kod HTML pojedynczego produktu */
 
       const generatedHTML = templates.cartProduct(menuProduct);
-      console.log('generatedHTML', generatedHTML);
+      //console.log('generatedHTML', generatedHTML);
 
       /* create element using utils.createElementFromHTML, Module 8.3 - tworzenie elementu DOM */
       
       const generatedDOM = utils.createDOMFromHTML(generatedHTML);
-      console.log('generatedDOM', generatedDOM);
+      //console.log('generatedDOM', generatedDOM);
 
       /* add elements generatedDOM to menu thisCart.dom.productList, Module 8.3 - dodajemy wygenerowane elementy DOM produktu do menu thisCart.dom.productList za pomocą metody appendChils */
 
       thisCart.dom.productList.appendChild(generatedDOM);
-      console.log('thisCart.dom.productList', thisCart.dom.productList);
+      //console.log('thisCart.dom.productList', thisCart.dom.productList);
+
+      /* Module 8.4 */
+      //push - Dodaje jeden lub więcej elementów na koniec tablicy i zwraca jej nową długość. Metoda ta zmienia długość tablicy.
+      //jednocześnie stworzymy nową instancję klasy new CartProduct oraz dodamyją do tablicy thisCart.products
+      
+      thisCart.products.push(new CartProduct(menuProduct, generatedDOM));
+      //console.log('thisCart.products', thisCart.products);
+      
+      /* Module 8.4 */
+
+      thisCart.update();
+    }
+
+    /* Module 8.4 */
+
+    update(){
+      const thisCart = this;
+      
+      thisCart.totalNumber = 0; //wlasciwosc instancji koszyka 
+      thisCart.subtotalPrice = 0;
+
+      for(let  thisCartProduct of thisCart.products ) { //uzyj pętli for...of, iterującej po thisCart.products
+        thisCart.subtotalPrice = thisCart.subtotalPrice + thisCartProduct.price; //suma cen pozycji w koszyku,
+        thisCart.totalNumber = thisCart.totalNumber + thisCartProduct.amount; //zwiekszyc o liczbe produktów
+      }
+
+      thisCart.totalPrice = thisCart.subtotalPrice + thisCart.deliveryFee; //cena ostateczna
+      console.log('total numer', thisCart.totalNumber);
+      console.log(thisCart.subtotalPrice);
+      console.log(thisCart.totalPrice);
+
+      for(let key of thisCart.renderTotalsKeys) { //wyswietlenie aktualnych cen 
+        for(let elem of thisCart.dom[key]) { //pętlę iterującą po każdym elemencie z kolekcji, zapisanej wcześniej pod jednym z kluczy w thisCart.renderTotalsKeys
+          elem.innerHTML = thisCart[key]; //???
+          //Dla każdego z tych elementów ustawiamy właściwość koszyka, która ma taki sam klucz.
+        }
+      }
+    }
+  }
+
+  /* Module 8.4 */
+
+  class CartProduct{
+    constructor(menuProduct, element){
+      const thisCartProduct = this;
+
+      thisCartProduct.id = menuProduct.id;
+      thisCartProduct.name = menuProduct.name;
+      thisCartProduct.price = menuProduct.price;
+      thisCartProduct.priceSingle = menuProduct.priceSingle;
+      thisCartProduct.amount = menuProduct.amount;
+      thisCartProduct.params = JSON.parse(JSON.stringify(menuProduct.params)); /* deep copy, 
+        klonujemy obiekt, aby zachować kopię jego aktualnych wartości,
+        klonuje-kopiuje obiekty na wszystkich poziomach 
+        – również obiekty zapisane we właściwościach klonowanego obiektu. */
+
+      thisCartProduct.getElements(element);
+      //console.log('new CartProduct', thisCartProduct);
+      //console.log('productData', menuProduct);
+      thisCartProduct.initAmountWidget();
+    }
+
+    /* Module 8.4 */
+
+    getElements(element){
+      const thisCartProduct = this;
+
+      thisCartProduct.dom = {};
+
+      thisCartProduct.dom.wrapper = element;
+      thisCartProduct.dom.amountWidget = thisCartProduct.dom.wrapper.querySelector(select.cartProduct.amountWidget);
+      thisCartProduct.dom.price = thisCartProduct.dom.wrapper.querySelector(select.cartProduct.price);
+      thisCartProduct.dom.edit = thisCartProduct.dom.wrapper.querySelector(select.cartProduct.edit);
+      thisCartProduct.dom.remove = thisCartProduct.dom.wrapper.querySelector(select.cartProduct.remove);
+    }
+
+    /* Module 8.4 */
+
+    initAmountWidget(){ //tworzy instancję klasy AmountWidget i zapisuje ją we właściwości produktu
+      const thisCartProduct = this;
+
+      thisCartProduct.amountWidget = new AmountWidget(thisCartProduct.dom.amountWidget);
+      //console.log(thisProduct.amountWidget);
+
+      thisCartProduct.dom.amountWidget.addEventListener('updated', function(){
+        thisCartProduct.amount = thisCartProduct.amountWidget.value;
+        thisCartProduct.price = thisCartProduct.priceSingle * thisCartProduct.amount;
+        thisCartProduct.dom.price.innerHTML = thisCartProduct.price;
+      });
     }
   }
 
@@ -596,7 +716,7 @@
       const thisApp = this;
 
       const cartElem = document.querySelector(select.containerOf.cart);
-      console.log(cartElem);
+      //console.log(cartElem);
       thisApp.cart = new Cart(cartElem);
     },
   };
