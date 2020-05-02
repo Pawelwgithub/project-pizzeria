@@ -547,7 +547,7 @@
       }
     }
 
-    /* Module 8.2, Module 8.4 */
+    /* Module 8.2, Module 8.4, Module 8.5 */
 
     initActions(){
       const thisCart = this;
@@ -563,6 +563,12 @@
       
       thisCart.dom.productList.addEventListener('updated', function(){
         thisCart.update();
+      });
+
+      /* Module 8.5 */
+
+      thisCart.dom.productList.addEventListener('remove', function(){
+        thisCart.remove(event.detail.cartProduct);  //handler eventu, wywolujący metody remove
       });
     }
 
@@ -617,12 +623,34 @@
       console.log(thisCart.subtotalPrice);
       console.log(thisCart.totalPrice);
 
+      /* Module 8.5 */
+
+      if(thisCart.subtotalPrice == 0 ){ //usuwanie ceny dostawy po usunięciu wszystkich produktów z koszyka
+        thisCart.totalPrice = 0;
+        thisCart.deliveryFee = 0;
+      }else{
+        thisCart.totalPrice = thisCart.subtotalPrice + thisCart.deliveryFee;
+      }
+
+      /* Module 8.4 */
+      
       for(let key of thisCart.renderTotalsKeys) { //wyswietlenie aktualnych cen 
         for(let elem of thisCart.dom[key]) { //pętlę iterującą po każdym elemencie z kolekcji, zapisanej wcześniej pod jednym z kluczy w thisCart.renderTotalsKeys
           elem.innerHTML = thisCart[key]; //???
           //Dla każdego z tych elementów ustawiamy właściwość koszyka, która ma taki sam klucz.
         }
       }
+    }
+
+    /* Module 8.5 */
+
+    remove(cartProduct){
+      const thisCart = this;
+      const index = thisCart.products.indexOf(cartProduct);
+      //Kiedy chcemy sprawdzić, jaki indeks ma pewna konkretna wartość, możemy to zrobić za pomocą metody indexOf
+      thisCart.products.splice(index, 1);//usuwanie elementu z tablicy,
+      cartProduct.dom.wrapper.remove();
+      thisCart.update();
     }
   }
 
@@ -646,6 +674,7 @@
       //console.log('new CartProduct', thisCartProduct);
       //console.log('productData', menuProduct);
       thisCartProduct.initAmountWidget();
+      thisCartProduct.initActions();
     }
 
     /* Module 8.4 */
@@ -674,6 +703,37 @@
         thisCartProduct.amount = thisCartProduct.amountWidget.value;
         thisCartProduct.price = thisCartProduct.priceSingle * thisCartProduct.amount;
         thisCartProduct.dom.price.innerHTML = thisCartProduct.price;
+      });
+    }
+
+    /* Module 8.5 */
+
+    remove() { //usuwanie produktu z koszyka
+      const thisCartProduct = this;
+  
+      const event = new CustomEvent('remove', {
+        bubbles: true,
+        detail: { //przekazujemy odwołanie do tej instancji, dla której kliknięto guzik usuwania.
+          cartProduct: thisCartProduct, 
+        }
+      });
+      console.log(event);
+
+      thisCartProduct.dom.wrapper.dispatchEvent(event); 
+    }
+
+    /* Module 8.5 */
+
+    initActions(){
+      const thisCartProduct = this;
+
+      thisCartProduct.dom.edit.addEventListener('click', function(event){
+        event.preventDefault();
+      });
+
+      thisCartProduct.dom.remove.addEventListener('click', function(event){
+        event.preventDefault();
+        thisCartProduct.remove();
       });
     }
   }
