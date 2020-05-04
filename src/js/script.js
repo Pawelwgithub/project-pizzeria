@@ -77,6 +77,12 @@
       defaultDeliveryFee: 20,
     },
     // CODE ADDED END Module 8.1
+    /* Module 8.7 */
+    db: {
+      url: '//localhost:3131',
+      product: 'product',
+      order: 'order',
+    },
   };
 
   const templates = {
@@ -625,12 +631,12 @@
 
       /* Module 8.5 */
 
-      if(thisCart.subtotalPrice == 0 ){ //usuwanie ceny dostawy po usunięciu wszystkich produktów z koszyka
-        thisCart.totalPrice = 0;
-        thisCart.deliveryFee = 0;
-      }else{
-        thisCart.totalPrice = thisCart.subtotalPrice + thisCart.deliveryFee;
-      }
+      //if(thisCart.subtotalPrice == 0 ){ //usuwanie ceny dostawy po usunięciu wszystkich produktów z koszyka
+      //  thisCart.totalPrice = 0;
+      //  thisCart.deliveryFee = 0;
+      //}else{
+      //  thisCart.totalPrice = thisCart.subtotalPrice + thisCart.deliveryFee;
+      //}
 
       /* Module 8.4 */
       
@@ -738,7 +744,7 @@
     }
   }
 
-  /* Module 7.3 */
+  /* Module 7.3, Module 8.2, Module 8.7 */
 
   const app = {
     initMenu: function(){
@@ -746,15 +752,39 @@
 
       //console.log('thisApp.data:', thisApp.data);
 
-      for (let productData in thisApp.data.products){
-        new Product(productData, thisApp.data.products[productData]);
+      for (let productData in thisApp.data.products){ //tworzymy nową instancję dla każdego produktu.
+        //new Product(productData, thisApp.data.products[productData]);
+        new Product(thisApp.data.products[productData].id, thisApp.data.products[productData]); //po wywolaniu zapy. AJAX dodal. ID, Module 8.7
       }
     },
     
     initData: function(){
       const thisApp = this;
   
-      thisApp.data = dataSource;
+      thisApp.data = {}; // {}; Module 8.7
+
+      const url = settings.db.url + '/' + settings.db.product; // Module 8.7
+
+      /* Module 8.7 */
+
+      fetch(url) //wysyłamy zapytanie pod podany adres endpointu
+        .then(function(rawResponse){
+          return rawResponse.json();
+        })
+        .then(function(parsedResponse){  //po otrzymaniu skonwertowanej odpowiedzi parsedResponse, wyświetlamy ją w konsoli.
+          console.log('parsedResponse', parsedResponse);
+
+          /* save parsedResponse as thisApp.data.products, Module 8.7 */
+
+          thisApp.data.products = parsedResponse;
+
+          /* execute initMenu method, Module 8.7 */
+
+          thisApp.initMenu();
+
+        });
+
+      console.log('thisApp.data', JSON.stringify(thisApp.data));
     },
 
     init: function(){
@@ -766,7 +796,6 @@
       //console.log('templates:', templates);
       
       thisApp.initData();
-      thisApp.initMenu();
       thisApp.initCart();
     },
     
