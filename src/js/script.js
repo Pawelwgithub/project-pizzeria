@@ -528,7 +528,7 @@
       thisCart.initActions();
     }
 
-    /* Module 8.2, Module 8.3, Module 8.4 */
+    /* Module 8.2, Module 8.3, Module 8.4, Module 8.8 */
 
     getElements(element){
       const thisCart = this;
@@ -551,9 +551,20 @@
       for(let key of thisCart.renderTotalsKeys){
         thisCart.dom[key] = thisCart.dom.wrapper.querySelectorAll(select.cart[key]);
       }
+
+      /* Module 8.8 */
+
+      thisCart.dom.form = document.querySelector(select.cart.form);
+      console.log(thisCart.dom.form);
+
+      thisCart.dom.phone = document.querySelector(select.cart.phone);
+      console.log(thisCart.dom.phone);
+
+      thisCart.dom.address = document.querySelector(select.cart.address);
+      console.log(thisCart.dom.address);
     }
 
-    /* Module 8.2, Module 8.4, Module 8.5 */
+    /* Module 8.2, Module 8.4, Module 8.5, Module 8.8 */
 
     initActions(){
       const thisCart = this;
@@ -564,8 +575,8 @@
 
       /* Module 8.4 */
       /* Nasłuchujemy tutaj na liście produktów, w której umieszczamy produkty, 
-      w których znajduje się widget liczby sztuk, który generuje ten event. 
-      Dzięki właściwości bubbles "usłyszymy" go na tej liście i możemy wtedy wykonać metodę update */
+        w których znajduje się widget liczby sztuk, który generuje ten event. 
+        Dzięki właściwości bubbles "usłyszymy" go na tej liście i możemy wtedy wykonać metodę update */
       
       thisCart.dom.productList.addEventListener('updated', function(){
         thisCart.update();
@@ -576,6 +587,65 @@
       thisCart.dom.productList.addEventListener('remove', function(){
         thisCart.remove(event.detail.cartProduct);  //handler eventu, wywolujący metody remove
       });
+
+      /* Module 8.8 */
+
+      thisCart.dom.form.addEventListener('submit', function(event){
+        event.preventDefault();
+        thisCart.sendOrder();
+      });
+    }
+
+    /* Module 8.8 */
+
+    sendOrder() {
+      const thisCart = this;
+
+      const url = settings.db.url + '/' + settings.db.order; //adres endpointu. kontaktojemy sie z endpointem zamowenie(order)
+
+      const payload = { //ladunek- czyli tak określa się dane, które będą wysłane do serwera
+        //address: 'test',
+        address: thisCart.dom.address,
+        phone: thisCart.dom.phone,
+        totalPrice: thisCart.totalPrice,
+        subtotalPrice: thisCart.subtotalPrice,
+        totalNumber: thisCart.totalNumber,
+        deliveryFee: thisCart.deliveryFee,
+        products: [],
+      };
+
+      /* Module 8.8 */
+      /* Pętla iterującą po wszystkich thisCart.products, i dla każdego produktu wywołaj jego metodę getData.
+        Wynik zwracany przez tą metodą dodaj do tablicy payload.products */
+
+      //for(let singleProduct of thisCart.products){ 
+      //  const orderedProduct = singleProduct.getData;
+      //  payload.products.push(orderedProduct);
+      //push - Dodaje jeden lub więcej elementów na koniec tablicy i zwraca jej nową długość. Metoda ta zmienia długość tablicy.
+      
+      for(let product of thisCart.products){
+        product.getData();
+        payload.products.push(product);
+      }
+
+      /* Module 8.8 */
+      
+      const options = { //opcje, które skonfigurują zapytanie
+        method: 'POST', //metoda POST służy do wysyłania nowych danych do API
+        headers: { //musimy ustawić nagłówek, aby nasz serwer wiedział, że wysyłamy dane w postaci JSONa
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload), //nagłówek body, czyli treść którą wysyłamy. Używamy tutaj metody JSON.stringify, aby przekonwertować obiekt payload na ciąg znaków w formacie JSON.
+      };
+
+      /* Module 8.8 */
+
+      fetch(url, options)
+        .then(function(response){
+          return response.json();
+        }).then(function(parsedResponse){
+          console.log('parsedResponse', parsedResponse);
+        });
     }
 
     /* Module 8.3, Module 8.4 */
@@ -631,12 +701,12 @@
 
       /* Module 8.5 */
 
-      //if(thisCart.subtotalPrice == 0 ){ //usuwanie ceny dostawy po usunięciu wszystkich produktów z koszyka
-      //  thisCart.totalPrice = 0;
-      //  thisCart.deliveryFee = 0;
-      //}else{
-      //  thisCart.totalPrice = thisCart.subtotalPrice + thisCart.deliveryFee;
-      //}
+      if(thisCart.subtotalPrice == 0 ){ //usuwanie ceny dostawy po usunięciu wszystkich produktów z koszyka
+        thisCart.totalPrice = 0;
+        thisCart.deliveryFee = 0;
+      }else{
+        thisCart.totalPrice = thisCart.subtotalPrice + thisCart.deliveryFee;
+      }
 
       /* Module 8.4 */
       
@@ -742,6 +812,26 @@
         thisCartProduct.remove();
       });
     }
+
+    /* Module 8.8 */
+    /* Metoda, która będzie zwracać wszystkie informacje o zamawianym produkcie –
+      id, amount, price, priceSingle oraz params.
+      Wszystkie te wartości są ustawiane w konstruktorze, 
+      więc nie powinno być problemu ze zwróceniem ich ("zapakowanych" w obiekt) z metody getData */
+
+    getData(){ //wszystko zebrane w jednym obiekcie
+      const thisCartProduct = this;
+
+      const productData = {
+        id: thisCartProduct.id,
+        amount: thisCartProduct.amount,
+        price: thisCartProduct.price,
+        priceSingle: thisCartProduct.priceSingle,
+        params: thisCartProduct.params,
+      };
+      console.log('product data:', productData);
+      return productData;
+    }
   }
 
   /* Module 7.3, Module 8.2, Module 8.7 */
@@ -775,10 +865,12 @@
           console.log('parsedResponse', parsedResponse);
 
           /* save parsedResponse as thisApp.data.products, Module 8.7 */
+          /* zapisz parsedResponse jako thisApp.data.products, moduł 8.7 */
 
           thisApp.data.products = parsedResponse;
 
           /* execute initMenu method, Module 8.7 */
+          /* wykonaj metodę initMenu, moduł 8.7 */
 
           thisApp.initMenu();
 
