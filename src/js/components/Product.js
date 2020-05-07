@@ -334,12 +334,12 @@ export class Product{
 
     /* Module 9.1 */
 
-    //const event = new CustomEvent('add-to-cart', {
-    //  bubles: true,
-    //  detail: {
-    //    product: thisProduct,
-    //  },
-    //});
-    //thisProduct.element.dispatchEvent(event);
+    const event = new CustomEvent('add-to-cart', {
+      bubles: true,
+      detail: {
+        product: thisProduct,
+      },
+    });
+    thisProduct.element.dispatchEvent(event);
   }
 }

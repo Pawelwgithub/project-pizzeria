@@ -2,7 +2,7 @@
 
 import {Product} from './components/Product.js';
 import {Cart} from './components/Cart.js';
-import {select, settings} from './settings.js';
+import {select, settings, classNames} from './settings.js';
 
 export const app = {
   initMenu: function(){
@@ -57,11 +57,64 @@ export const app = {
 
     /* Module 9.1 */
 
-    //thisApp.productList = document.querySelector(select.containerOf.menu);
+    thisApp.productList = document.querySelector(select.containerOf.menu);
 
-    //thisApp.productList.addEventListener('add-to-cart', function(event){
-    //  app.cart.add(event.detail.product);
-    //});
+    thisApp.productList.addEventListener('add-to-cart', function(event){
+      app.cart.add(event.detail.product);
+    });
+  },
+
+  /* Module 9.2 */
+
+  initPages: function () {
+    const thisApp = this;
+
+    thisApp.pages = Array.from(document.querySelector(select.containerOf.pages).children);
+    thisApp.navLinks = Array.from(document.querySelectorAll(select.nav.links)); 
+    //thisApp.activatePage(thisApp.pages[0].id); //wywolanie metody, 0 - pierwsza strona z indeksem 0
+    //kasujemy kod powyzej, aby Po odświeżeniu strony jednak wyświetla się ponownie menu z produktami.
+
+    let pagesMatchingHash = [];
+
+    if(window.location.hash.length > 2){
+      const idFromHash = window.location.hash.replace('#/', ''); // odczytując hash i zamieniając w nim '#/' na pusty ciąg znaków ''
+
+      pagesMatchingHash = thisApp.pages.filter(function (page){ //Ta metoda pozwala na przefiltrowanie tablicy za pomocą funkcji filtrującej, przekazanej jako argument.
+        return page.id == idFromHash; //Ta metoda nie modyfikuje filtrowanej tablicy, tylko zwraca nową tablicę, zawierającą jedynie elementy spełniające warunek – czyli te, dla których funkcja filtrująca zwróciła prawdziwą wartość.
+      });
+    }
+    
+    thisApp.activatePage(pagesMatchingHash.length ? pagesMatchingHash[0].id : thisApp.pages[0].id);
+    //kod powyżej powoduje ,że po przełączeniu się na podstronę Booking, odświeżenie strony nie przełączy nas z powrotem na podstronę Order. Nie będziemy musieli klikać linka "Booking" po każdym odświeżeniu strony.
+
+    for (let link of thisApp.navLinks) {
+      link.addEventListener('click', function (event) {
+        const clickedElement = this;
+        event.preventDefault();
+
+        /* TODO: GET PAGE ID FROM HREF*/
+        const pageId = clickedElement.getAttribute('href');
+        const href = pageId.replace('#', '');
+        /*  TODO: activate page */
+        thisApp.activatePage(href);
+      });
+    }
+  },
+
+  /* Module 9.2 */
+
+  activatePage: function(pageId){
+    const thisApp = this;
+
+    for (let link of thisApp.navLinks) {
+      link.classList.toggle(classNames.nav.active, link.getAttribute('href') == '#' + pageId);
+    }
+
+    for (let page of thisApp.pages) {
+      page.classList.toggle(classNames.nav.active, page.getAttribute('id') == pageId);
+    }
+
+    window.location.hash = '#/' + pageId;
   },
 
   init: function(){
@@ -72,6 +125,7 @@ export const app = {
     //console.log('settings:', settings);
     //console.log('templates:', templates);
 
+    thisApp.initPages();
     thisApp.initData();
     thisApp.initCart();
   },
