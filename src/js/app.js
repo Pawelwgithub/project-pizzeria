@@ -3,6 +3,7 @@
 import {Product} from './components/Product.js';
 import {Cart} from './components/Cart.js';
 import {select, settings, classNames} from './settings.js';
+import { Booking } from './components/Booking.js';
 
 export const app = {
   initMenu: function(){
@@ -117,6 +118,16 @@ export const app = {
     window.location.hash = '#/' + pageId;
   },
 
+  /* Module 9.3 */
+
+  initBooking: function(){
+    const thisApp = this;
+  
+    const bookingContainer = document.querySelector(select.containerOf.booking);
+    //console.log('booking container: ', bookingContainer);
+    thisApp.booking = new Booking(bookingContainer);
+  },
+
   init: function(){
     const thisApp = this;
     //console.log('*** App starting ***');
@@ -128,6 +139,7 @@ export const app = {
     thisApp.initPages();
     thisApp.initData();
     thisApp.initCart();
+    thisApp.initBooking();
   },
 };
 
