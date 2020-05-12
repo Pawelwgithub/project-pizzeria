@@ -46,13 +46,13 @@ export class Cart {
     /* Module 8.8 */
 
     thisCart.dom.form = document.querySelector(select.cart.form);
-    console.log(thisCart.dom.form);
+    //console.log(thisCart.dom.form);
 
     thisCart.dom.phone = document.querySelector(select.cart.phone);
-    console.log(thisCart.dom.phone);
+    //console.log(thisCart.dom.phone);
 
     thisCart.dom.address = document.querySelector(select.cart.address);
-    console.log(thisCart.dom.address);
+    //console.log(thisCart.dom.address);
   }
 
   /* Module 8.2, Module 8.4, Module 8.5, Module 8.8 */
