@@ -31,6 +31,20 @@ export class Cart {
     thisCart.dom.toggleTrigger = thisCart.dom.wrapper.querySelector(select.cart.toggleTrigger);
     thisCart.dom.productList = thisCart.dom.wrapper.querySelector(select.cart.productList);
 
+    /* Module 8.8 */
+
+    //thisCart.dom.form = document.querySelector(select.cart.form);
+    thisCart.dom.form = thisCart.dom.wrapper.querySelector(select.cart.form);
+    //console.log(thisCart.dom.form);
+
+    //thisCart.dom.phone = document.querySelector(select.cart.phone);
+    thisCart.dom.phone = thisCart.dom.wrapper.querySelector(select.cart.phone);
+    //console.log(thisCart.dom.phone);
+
+    //thisCart.dom.address = document.querySelector(select.cart.address);
+    thisCart.dom.address = thisCart.dom.wrapper.querySelector(select.cart.address);
+    //console.log(thisCart.dom.address);
+
     /* Module 8.4 */
     /*Tworzymy tutaj tablicę, która zawiera cztery stringi (ciągi znaków).
         Każdy z nich jest kluczem w obiekcie select.cart.
@@ -42,17 +56,6 @@ export class Cart {
     for(let key of thisCart.renderTotalsKeys){
       thisCart.dom[key] = thisCart.dom.wrapper.querySelectorAll(select.cart[key]);
     }
-
-    /* Module 8.8 */
-
-    thisCart.dom.form = document.querySelector(select.cart.form);
-    //console.log(thisCart.dom.form);
-
-    thisCart.dom.phone = document.querySelector(select.cart.phone);
-    //console.log(thisCart.dom.phone);
-
-    thisCart.dom.address = document.querySelector(select.cart.address);
-    //console.log(thisCart.dom.address);
   }
 
   /* Module 8.2, Module 8.4, Module 8.5, Module 8.8 */
@@ -96,8 +99,10 @@ export class Cart {
 
     const payload = { //ladunek- czyli tak określa się dane, które będą wysłane do serwera
       //address: 'test',
-      address: thisCart.dom.address,
-      phone: thisCart.dom.phone,
+      //address: thisCart.dom.address,
+      //phone: thisCart.dom.phone,
+      phone: thisCart.dom.phone.value,
+      address: thisCart.dom.address.value,
       totalPrice: thisCart.totalPrice,
       subtotalPrice: thisCart.subtotalPrice,
       totalNumber: thisCart.totalNumber,
@@ -211,7 +216,8 @@ export class Cart {
       thisCart.deliveryFee = 0;
       thisCart.totalPrice = 0;
     }else{
-      thisCart.deliveryFee = 20;
+      //thisCart.deliveryFee = 20;
+      thisCart.deliveryFee;
       thisCart.totalPrice = thisCart.subtotalPrice + thisCart.deliveryFee;
     }
 

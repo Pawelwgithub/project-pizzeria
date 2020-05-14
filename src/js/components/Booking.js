@@ -1,6 +1,6 @@
-/* Module 9.3, Module 9.5, Module 9.6 */
+/* Module 9.3, Module 9.5, Module 9.6, Module 9.7 */
 
-import {templates, select, settings} from '../settings.js';
+import {templates, select, settings, classNames} from '../settings.js';
 import { AmountWidget } from './AmountWidget.js';
 import { DatePicker } from './DatePicker.js';
 import { HourPicker } from './HourPicker.js';
@@ -15,7 +15,7 @@ export class Booking {
     thisBooking.getData();
   }
 
-  /* Module 9.3, Module 9.5 */
+  /* Module 9.3, Module 9.5, Module 9.7 */
 
   render(bookingContainer){
     const thisBooking = this;
@@ -31,9 +31,10 @@ export class Booking {
     thisBooking.dom.hoursAmount = thisBooking.dom.wrapper.querySelector(select.booking.hoursAmount);
     thisBooking.dom.datePicker = thisBooking.dom.wrapper.querySelector(select.widgets.datePicker.wrapper);
     thisBooking.dom.hourPicker = thisBooking.dom.wrapper.querySelector(select.widgets.hourPicker.wrapper);
+    thisBooking.dom.tables = thisBooking.dom.wrapper.querySelectorAll(select.booking.tables);
   }
 
-  /* Module 9.3 */
+  /* Module 9.3, Module 9.7 */
 
   initWidgets(){
     const thisBooking = this;
@@ -42,6 +43,9 @@ export class Booking {
     thisBooking.hoursAmount = new AmountWidget(thisBooking.dom.hoursAmount);
     thisBooking.datePicker = new DatePicker(thisBooking.dom.datePicker);
     thisBooking.hourPicker = new HourPicker(thisBooking.dom.hourPicker);
+    thisBooking.dom.wrapper.addEventListener('updated', function(){
+      thisBooking.updateDOM();
+    });
   }     
   
   /* Module 9.6 */
@@ -63,7 +67,7 @@ export class Booking {
       eventsRepeat: settings.db.repeatParam + '&' + utils.queryParams(endDate),
     };
   
-    console.log('getData params', params);
+    //console.log('getData params', params);
 
     const urls = { //obiekt w którym zapiszemy pełne adresy zapytań
       booking: settings.db.url + '/' + settings.db.booking + '?' + params.booking,
@@ -71,7 +75,7 @@ export class Booking {
       eventsRepeat: settings.db.url + '/' + settings.db.event + '?' + params.eventsRepeat,
     };
     
-    console.log('getData urls', urls);
+    //console.log('getData urls', urls);
 
     Promise.all([ //metoda Promise.all działa podobnie jak fetch – z tą różnicą, że funkcja podłączona do niej za pomocą .then wykona się dopiero, kiedy wszystkie zapytania będą wykonane.
       fetch(urls.booking), //używamy Promise.all dwukrotnie. Najpierw z pomocą tej metody wysyłamy trzy zapytania pod przygotowane wcześniej adresy.
@@ -91,7 +95,7 @@ export class Booking {
     
   }
 
-  /* Module 9.6 */
+  /* Module 9.6, Module 9.7 */
 
   parseData(bookings, eventsCurrent, eventsRepeat){ // Agregacja danych źródłowych
     const thisBooking = this;
@@ -104,6 +108,7 @@ export class Booking {
     }
 
     for (let event of bookings){
+      //console.log('Booking:', event);
       thisBooking.makeBooked(event.date, event.hour, event.duration, event.table);
     }
 
@@ -115,8 +120,9 @@ export class Booking {
         }
       }
     }
+    console.log('Bookings: ', thisBooking.booked);
     
-    //console.log('Bookings: ', thisBooking.booked);
+    thisBooking.updateDOM();
   }
 
   /* Module 9.6 */
@@ -142,5 +148,41 @@ export class Booking {
       }
     }
     //console.log(thisBooking.booked[date]);
+  }
+
+  /* Module 9.7 */
+
+  updateDOM(){
+    const thisBooking = this;
+    //console.log('updateDOM');
+
+    thisBooking.date = thisBooking.datePicker.value;
+    console.log('today is:', thisBooking.date);
+
+    thisBooking.hour = utils.hourToNumber(thisBooking.hourPicker.value);
+    console.log(thisBooking.hour);
+    console.log('thisBooking.date', thisBooking.date);
+
+    for(let table of thisBooking.dom.tables){
+      let tableId = table.getAttribute(settings.booking.tableIdAttribute);
+      if (!isNaN(tableId)) {
+        tableId = parseInt(tableId);
+      }
+      console.log('tableId is: ', tableId);
+      console.log(thisBooking.date);
+      if (
+        (typeof thisBooking.booked[thisBooking.date] != 'undefined') && 
+        (typeof thisBooking.booked[thisBooking.date][thisBooking.hour] != 'undefined') &&
+        
+        thisBooking.booked[thisBooking.date][thisBooking.hour].includes(tableId)) {
+        
+        table.classList.add(classNames.booking.tableBooked);
+        console.log('table booked: ' + tableId);
+      } else {
+        table.classList.remove(classNames.booking.tableBooked);
+        console.log('table available: ' + tableId);
+      }
+    } 
+    console.log('Bookings: ', thisBooking.booked);
   }
 }
