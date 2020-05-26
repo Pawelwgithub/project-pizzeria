@@ -69,8 +69,12 @@ export const select = {
     bookAddress: '.booking-form [name="address"]',
     starters: '[name="starter"]',
   },
-  nav: {
-    links: '.main-nav a',
+  nav: { /* Module 10.2 */
+    //links: '.main-nav a',
+    links: 'a.nav-link',
+  },
+  logo: { /* Module 10.2 */
+    link: '.logo__link',
   },
 };
 

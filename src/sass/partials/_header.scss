@@ -1,5 +1,5 @@
 .header {
-  padding: ($base-size * 5) 0 ($base-size * 8) 0;
+  padding: ($base-size * 5) 0 ($base-size * 5) 0; /* Module 10.2 */
   background: $color-dark;
   color: $color-light;
 
@@ -14,7 +14,9 @@
   line-height: 1;
 
   &__title {
-    margin: 0 0 $base-size 0;
+    //color: $color-main; /* Module 10.2 */
+    color: $color-light; /* Module 10.2 */
+    text-decoration: none; /* Module 10.2 */
     font-size: ($base-size * 4);
     font-family: $font-header;
     font-weight: $font-light;
@@ -27,7 +29,7 @@
   }
 
   &__subtitle {
-    margin: 0;
+    margin: $base-size 0 0 0; /* Module 10.2 */
     font-size: ($base-size * 1.5);
     font-weight: $font-light;
     font-style: italic;

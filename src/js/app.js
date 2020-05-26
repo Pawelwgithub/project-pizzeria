@@ -1,4 +1,4 @@
-/* Module 7.3, Module 8.2, Module 8.7, Module 9.1 */
+/* Module 7.3, Module 8.2, Module 8.7, Module 9.1, Module 10.2 */
 
 import {Product} from './components/Product.js';
 import {Cart} from './components/Cart.js';
@@ -65,41 +65,38 @@ export const app = {
     });
   },
 
-  /* Module 9.2 */
+  /* Module 9.2, Module 10.2 */
 
-  initPages: function () {
+  initPages: function(){
     const thisApp = this;
 
     thisApp.pages = Array.from(document.querySelector(select.containerOf.pages).children);
-    thisApp.navLinks = Array.from(document.querySelectorAll(select.nav.links)); 
-    //thisApp.activatePage(thisApp.pages[0].id); //wywolanie metody, 0 - pierwsza strona z indeksem 0
-    //kasujemy kod powyzej, aby Po odświeżeniu strony jednak wyświetla się ponownie menu z produktami.
+    thisApp.navLinks = Array.from(document.querySelectorAll(select.nav.links));
+    //console.log(thisApp.navLinks);
+    thisApp.logoLink = document.querySelector(select.logo.link);
+    //console.log(thisApp.logoLink);
+    thisApp.activatePage(thisApp.pages[0].id);
 
-    let pagesMatchingHash = [];
-
-    if(window.location.hash.length > 2){
-      const idFromHash = window.location.hash.replace('#/', ''); // odczytując hash i zamieniając w nim '#/' na pusty ciąg znaków ''
-
-      pagesMatchingHash = thisApp.pages.filter(function (page){ //Ta metoda pozwala na przefiltrowanie tablicy za pomocą funkcji filtrującej, przekazanej jako argument.
-        return page.id == idFromHash; //Ta metoda nie modyfikuje filtrowanej tablicy, tylko zwraca nową tablicę, zawierającą jedynie elementy spełniające warunek – czyli te, dla których funkcja filtrująca zwróciła prawdziwą wartość.
-      });
-    }
-    
-    thisApp.activatePage(pagesMatchingHash.length ? pagesMatchingHash[0].id : thisApp.pages[0].id);
-    //kod powyżej powoduje ,że po przełączeniu się na podstronę Booking, odświeżenie strony nie przełączy nas z powrotem na podstronę Order. Nie będziemy musieli klikać linka "Booking" po każdym odświeżeniu strony.
-
-    for (let link of thisApp.navLinks) {
-      link.addEventListener('click', function (event) {
+    for(let link of thisApp.navLinks){
+      link.addEventListener('click', function(event){
         const clickedElement = this;
+        //console.log(clickedElement);
         event.preventDefault();
-
-        /* TODO: GET PAGE ID FROM HREF*/
-        const pageId = clickedElement.getAttribute('href');
-        const href = pageId.replace('#', '');
-        /*  TODO: activate page */
-        thisApp.activatePage(href);
+        let pageId = clickedElement.getAttribute('href');
+        pageId = pageId.replace('#', '');
+        //console.log('pageId is: ', pageId);
+        thisApp.activatePage(pageId);
       });
     }
+
+    thisApp.logoLink.addEventListener('click', function(event){
+      const clickedElement = this;
+      event.preventDefault();
+      let pageId = clickedElement.getAttribute('href');
+      pageId = pageId.replace('#', '');
+      //console.log('pageId is: ', pageId);
+      thisApp.activatePage(pageId);
+    });
   },
 
   /* Module 9.2 */
@@ -128,6 +125,64 @@ export const app = {
     thisApp.booking = new Booking(bookingContainer);
   },
 
+  /* Module 10.2 */
+
+  initCarousel() {    // eslint-disable-next-line no-unused-vars
+
+    const review = [];
+
+    review[0] = {
+      title: 'Delicious food',
+      text:
+        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean vitae quam suscipit, interdum arcu nec,',
+      name: '- John Smith',
+    };
+    review[1] = {
+      title: 'Amazing service!',
+      text:
+        'Aenean vitae quam suscipit, interdum arcu nec, lorem ipsum dolor sit amet, consectetur adipiscing elit.',
+      name: '- Margaret Osborne',
+    };
+    review[2] = {
+      title: 'Great place',
+      text: 'Mauris maximus ipsum sed!!!',
+      name: '- Mark Miller',
+    };
+    let i = 0;
+    //console.log(review[0]);
+
+    const dots = document.querySelectorAll('.carousel-dots i');
+    //console.log(dots);
+
+    function changeSlide() {
+      const title = document.querySelector('.review-title');
+      const text = document.querySelector('.review-text');
+      const name = document.querySelector('.review-name');
+
+      for (let dot of dots) {
+        if (dot.id == 'dot-'+ (i + 1)) {
+          dot.classList.add('active');
+        } else {
+          dot.classList.remove('active');
+        }
+        title.innerHTML = review[i].title;
+        text.innerHTML = review[i].text;
+        name.innerHTML = review[i].name;
+      }
+
+      if (i < review.length - 1) {
+        i++;
+      } else {
+        i = 0;
+      }
+    }
+    changeSlide();
+
+    setInterval(() => {
+      changeSlide();
+    }, 3000);
+  },
+
   init: function(){
     const thisApp = this;
     //console.log('*** App starting ***');
@@ -140,6 +195,7 @@ export const app = {
     thisApp.initData();
     thisApp.initCart();
     thisApp.initBooking();
+    thisApp.initCarousel();
   },
 };
 
