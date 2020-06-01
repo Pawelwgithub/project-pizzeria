@@ -304,6 +304,8 @@ export class Booking {
         );
         console.log('booked: ', thisBooking.booked[payload.date]);
       });
+
+    thisBooking.reset();
   }
 
   /* Module 10.3 */
@@ -337,5 +339,16 @@ export class Booking {
     rangeColors.sort();
     const pushedColors = rangeColors.join();
     slider.style.background = 'linear-gradient(to right, ' + pushedColors + ')';
+  }
+
+  /* Module 10.1 */
+  
+  reset() {
+    const thisBooking = this;
+
+    thisBooking.updateDOM();
+
+    thisBooking.dom.phone.value = '';
+    thisBooking.dom.address.value = '';
   }
 }

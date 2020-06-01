@@ -144,6 +144,8 @@ export class Cart {
       }).then(function(parsedResponse){
         console.log('parsedResponse', parsedResponse);
       });
+
+    thisCart.reset();
   }
 
   /* Module 8.3, Module 8.4 */
@@ -242,5 +244,18 @@ export class Cart {
     thisCart.products.splice(index, 1);//usuwanie elementu z tablicy,
     cartProduct.dom.wrapper.remove();
     thisCart.update();
+  }
+
+  /* Module 8.8 */
+  
+  reset() {
+    const thisCart = this;
+    thisCart.products = [];
+    thisCart.dom.productList.innerHTML = '';
+
+    thisCart.update();
+
+    thisCart.dom.phone.value = '';
+    thisCart.dom.address.value = '';
   }
 }
